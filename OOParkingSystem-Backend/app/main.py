@@ -168,7 +168,7 @@ def park_car(park_car: schemas.ParkCar, db: Session = Depends(get_db)):
 
 
 @app.post("/unpark-car")
-def upark_car(unpark_car: schemas.UnparkCar, db: Session = Depends(get_db)):
+def unpark_car(unpark_car: schemas.UnparkCar, db: Session = Depends(get_db)):
     parking_slot = api.get_parking_slot_by_car_id(db=db, car_id=unpark_car.car_id)
     if parking_slot is None:
         raise HTTPException(status_code=404, detail="No parking slot with car id found")
