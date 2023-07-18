@@ -61,13 +61,13 @@ class ParkingSlotCreate(ParkingSlotBase):
 
 class ParkingSlotUpdate(BaseModel):
     id: int
-    car_id: int
+    car_id: str
     start_time_occupied: datetime
 
 
 class ParkingSlot(ParkingSlotBase):
     id: int
-    car_id: int | None
+    car_id: str | None
     start_time_occupied: datetime | None
 
     entry_points: list[EntryPointMap]
@@ -94,7 +94,7 @@ class ParkingSlotEntryPoint(ParkingSlotEntryPointBase):
 
 
 class CarBase(BaseModel):
-    id: int
+    id: str
 
 
 class CarCreate(CarBase):

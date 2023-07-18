@@ -19,7 +19,7 @@ def get_parking_fee(
     parking_slot_size: int,
     prev_exit_date: datetime = None,
 ):
-    delta = start_date - end_date
+    delta = end_date - start_date
     hours_parked = math.ceil(delta.total_seconds() / 3600)
     days_parked = math.floor(hours_parked / 24)
     hours_parked_remainder = hours_parked - (days_parked * 24)
@@ -40,7 +40,6 @@ def get_parking_fee(
             if hours_last_park < 1:
                 continuous_fee = parking_slot_pricing[parking_slot_size]
         parking_fee += hours_parked_remainder * continuous_fee
-
     return parking_fee
 
 
@@ -61,7 +60,6 @@ def create_entry_point(db: Session = Depends(get_db)):
 @app.get("/entry-points", response_model=list[schemas.EntryPoint])
 def read_entry_points(db: Session = Depends(get_db)):
     entry_points = api.get_entry_point_collection(db)
-    print(entry_points[0].parking_slots[0].parking_slot.size)
     return entry_points
 
 
@@ -129,7 +127,7 @@ def read_parking_slot_entry_point(
 
 @app.post("/cars", response_model=schemas.Car)
 def create_car(car: schemas.CarCreate, db: Session = Depends(get_db)):
-    return api.create_car(db=db, car=car)
+    return api.create_car(db=db, car_id=car.id)
 
 
 @app.get("/cars", response_model=list[schemas.Car])
@@ -160,9 +158,12 @@ def park_car(park_car: schemas.ParkCar, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No available parking slot found")
     db_car = api.get_car(db, car_id=park_car.car_id)
     if db_car is None:
-        db_car = api.create_car(db=db, car={"id": park_car.car_id})
+        db_car = api.create_car(db=db, car_id=park_car.car_id)
     return api.update_parking_slot(
-        db=db, parking_slot=parking_slot, car=db_car, start_time=park_car.start_time
+        db=db,
+        parking_slot=parking_slot,
+        car_id=db_car.id,
+        start_time=park_car.start_time,
     )
 
 
@@ -171,14 +172,18 @@ def upark_car(unpark_car: schemas.UnparkCar, db: Session = Depends(get_db)):
     parking_slot = api.get_parking_slot_by_car_id(db=db, car_id=unpark_car.car_id)
     if parking_slot is None:
         raise HTTPException(status_code=404, detail="No parking slot with car id found")
-    db_car = api.get_car(db, car_id=park_car.car_id)
+    db_car = api.get_car(db, car_id=unpark_car.car_id)
     if db_car is None:
         raise HTTPException(status_code=404, detail="No car found")
     prev_exit_date = db_car.exit_time
-    api.update_parking_slot(db=db, parking_slot=parking_slot, car=db_car)
+    start_time_occupied = parking_slot.start_time_occupied
+    api.update_parking_slot(
+        db=db, parking_slot=parking_slot, car_id=None, start_time=None
+    )
     db_car = api.update_car(db=db, car=db_car, exit_time=unpark_car.exit_time)
     return get_parking_fee(
-        start_date=parking_slot.start_time_occupied,
+        start_date=start_time_occupied,
         end_date=db_car.exit_time,
+        parking_slot_size=parking_slot.size,
         prev_exit_date=prev_exit_date,
     )

@@ -61,10 +61,10 @@ def create_parking_slot(db: Session, parking_slot: schemas.ParkingSlotCreate):
 def update_parking_slot(
     db: Session,
     parking_slot: schemas.ParkingSlot,
-    car: schemas.Car,
+    car_id: str,
     start_time: datetime,
 ):
-    parking_slot.car_id = car.id
+    parking_slot.car_id = car_id
     parking_slot.start_time_occupied = start_time
     db.commit()
     db.refresh(parking_slot)
@@ -112,8 +112,8 @@ def get_car_collection(db: Session):
     return db.query(models.Car).all()
 
 
-def create_car(db: Session, car: schemas.CarCreate):
-    db_car = models.Car(id=car.id)
+def create_car(db: Session, car_id: str):
+    db_car = models.Car(id=car_id)
     db.add(db_car)
     db.commit()
     db.refresh(db_car)
