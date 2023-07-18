@@ -68,6 +68,13 @@ def update_parking_slot(
     return parking_slot
 
 
+def update_car(db: Session, car: schemas.Car):
+    car.exit_time = datetime.now()
+    db.commit()
+    db.refresh(car)
+    return car
+
+
 def get_parking_slot_entry_point(db: Session, parking_slot_entry_point_id: int):
     return (
         db.query(models.ParkingSlotEntryPoint)
