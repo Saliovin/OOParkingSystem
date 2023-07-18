@@ -17,7 +17,7 @@ pip install pipenv
 ```
 4. Install packages
 ```
-pipenv installo
+pipenv install
 ```
 5. Run DB migrations
 ```
