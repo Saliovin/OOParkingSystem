@@ -125,7 +125,9 @@ class ParkCar(BaseModel):
     car_id: str
     car_size: constr(pattern="['S', 'M', 'L']", min_length=1, max_length=1)
     entry_point_id: int
+    start_time: datetime
 
 
 class UnparkCar(BaseModel):
     car_id: str
+    exit_time: datetime

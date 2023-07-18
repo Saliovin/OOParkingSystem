@@ -59,17 +59,20 @@ def create_parking_slot(db: Session, parking_slot: schemas.ParkingSlotCreate):
 
 
 def update_parking_slot(
-    db: Session, parking_slot: schemas.ParkingSlot, car: schemas.Car
+    db: Session,
+    parking_slot: schemas.ParkingSlot,
+    car: schemas.Car,
+    start_time: datetime,
 ):
     parking_slot.car_id = car.id
-    parking_slot.start_time_occupied = datetime.now()
+    parking_slot.start_time_occupied = start_time
     db.commit()
     db.refresh(parking_slot)
     return parking_slot
 
 
-def update_car(db: Session, car: schemas.Car):
-    car.exit_time = datetime.now()
+def update_car(db: Session, car: schemas.Car, exit_time: datetime):
+    car.exit_time = exit_time
     db.commit()
     db.refresh(car)
     return car

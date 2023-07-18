@@ -161,7 +161,9 @@ def park_car(park_car: schemas.ParkCar, db: Session = Depends(get_db)):
     db_car = api.get_car(db, car_id=park_car.car_id)
     if db_car is None:
         db_car = api.create_car(db=db, car={"id": park_car.car_id})
-    return api.update_parking_slot(db=db, parking_slot=parking_slot, car=db_car)
+    return api.update_parking_slot(
+        db=db, parking_slot=parking_slot, car=db_car, start_time=park_car.start_time
+    )
 
 
 @app.post("/unpark-car")
@@ -174,7 +176,7 @@ def upark_car(unpark_car: schemas.UnparkCar, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No car found")
     prev_exit_date = db_car.exit_time
     api.update_parking_slot(db=db, parking_slot=parking_slot, car=db_car)
-    db_car = api.update_car(db=db, car=db_car)
+    db_car = api.update_car(db=db, car=db_car, exit_time=unpark_car.exit_time)
     return get_parking_fee(
         start_date=parking_slot.start_time_occupied,
         end_date=db_car.exit_time,
