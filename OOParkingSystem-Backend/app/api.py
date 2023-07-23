@@ -1,9 +1,11 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-
-from app.database import clear_data
-
-from . import models, schemas
+from app.database.database import clear_data
+from app.schemas.Car import Car
+from app.schemas.ParkingSlot import ParkingSlot, ParkingSlotCreate
+from app.schemas.ParkingSlotEntryPoint import ParkingSlotEntryPointCreate
+from app.schemas.ParkingSystem import ParkCar, ParkingSystemCreate
+from app.database import models
 
 car_size_slot_size_mapping = {
     "S": ["SP", "MP", "LP"],
@@ -50,7 +52,7 @@ def get_parking_slot_collection(db: Session):
     return db.query(models.ParkingSlot).all()
 
 
-def create_parking_slot(db: Session, parking_slot: schemas.ParkingSlotCreate):
+def create_parking_slot(db: Session, parking_slot: ParkingSlotCreate):
     db_parking_slot = models.ParkingSlot(size=parking_slot.size)
     db.add(db_parking_slot)
     db.commit()
@@ -60,7 +62,7 @@ def create_parking_slot(db: Session, parking_slot: schemas.ParkingSlotCreate):
 
 def update_parking_slot(
     db: Session,
-    parking_slot: schemas.ParkingSlot,
+    parking_slot: ParkingSlot,
     car_id: str,
     start_time: datetime,
 ):
@@ -71,7 +73,7 @@ def update_parking_slot(
     return parking_slot
 
 
-def update_car(db: Session, car: schemas.Car, exit_time: datetime):
+def update_car(db: Session, car: Car, exit_time: datetime):
     car.exit_time = exit_time
     db.commit()
     db.refresh(car)
@@ -91,7 +93,7 @@ def get_parking_slot_entry_point_collection(db: Session):
 
 
 def create_parking_slot_entry_point(
-    db: Session, parking_slot_entry_point: schemas.ParkingSlotEntryPointCreate
+    db: Session, parking_slot_entry_point: ParkingSlotEntryPointCreate
 ):
     db_parking_slot_entry_point = models.ParkingSlotEntryPoint(
         slot_id=parking_slot_entry_point.slot_id,
@@ -120,7 +122,7 @@ def create_car(db: Session, car_id: str):
     return db_car
 
 
-def start_new_parking_system(db: Session, parking_system: schemas.ParkingSystemCreate):
+def start_new_parking_system(db: Session, parking_system: ParkingSystemCreate):
     clear_data(db)
     db_entry_point_list = []
     for i in range(parking_system.entry_points):
@@ -142,7 +144,7 @@ def start_new_parking_system(db: Session, parking_system: schemas.ParkingSystemC
     return {"success": True}
 
 
-def get_available_parking_slot(db: Session, park_car: schemas.ParkCar):
+def get_available_parking_slot(db: Session, park_car: ParkCar):
     parking_slot_entry_point = (
         db.query(models.ParkingSlotEntryPoint)
         .filter(models.ParkingSlotEntryPoint.entry_id == park_car.entry_point_id)
@@ -163,7 +165,3 @@ def get_available_parking_slot(db: Session, park_car: schemas.ParkCar):
     if parking_slot_entry_point is None:
         return None
     return parking_slot_entry_point.parking_slot
-
-
-def unpark_car(db: Session):
-    pass

@@ -1,69 +1,50 @@
-from datetime import datetime
-import math
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from app.schemas.Car import Car, CarCreate
+from app.schemas.Entrypoint import EntryPoint
+from app.schemas.ParkingSlot import ParkingSlot, ParkingSlotCreate
+from app.schemas.ParkingSlotEntryPoint import (
+    ParkingSlotEntryPoint,
+    ParkingSlotEntryPointCreate,
+)
+from app.schemas.ParkingSystem import (
+    GenericSuccess,
+    ParkCar,
+    ParkingSystemCreate,
+    UnparkCar,
+)
+from app.database.database import get_db
+from app.utils import get_parking_fee
+from . import api
 
-from . import api, models, schemas
-from .database import SessionLocal, engine
-
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-parking_slot_pricing = {"SP": 20, "MP": 60, "LP": 100, "full": 5000, "starting": 40}
+origins = [
+    "*",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-def get_parking_fee(
-    start_date: datetime,
-    end_date: datetime,
-    parking_slot_size: int,
-    prev_exit_date: datetime = None,
-):
-    delta = end_date - start_date
-    hours_parked = math.ceil(delta.total_seconds() / 3600)
-    days_parked = math.floor(hours_parked / 24)
-    hours_parked_remainder = hours_parked - (days_parked * 24)
-    parking_fee = 0
-    if days_parked:
-        parking_fee += days_parked * parking_slot_pricing["full"]
-        parking_fee += hours_parked_remainder * parking_slot_pricing[parking_slot_size]
-    else:
-        if hours_parked_remainder > 3:
-            parking_fee += (hours_parked_remainder - 3) * parking_slot_pricing[
-                parking_slot_size
-            ]
-            hours_parked_remainder = 3
-        continuous_fee = parking_slot_pricing["starting"]
-        if prev_exit_date:
-            delta_last_park = start_date - prev_exit_date
-            hours_last_park = delta_last_park.total_seconds() / 3600
-            if hours_last_park < 1:
-                continuous_fee = parking_slot_pricing[parking_slot_size]
-        parking_fee += hours_parked_remainder * continuous_fee
-    return parking_fee
-
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@app.post("/entry-points", response_model=schemas.EntryPoint)
+@app.post("/entry-points", response_model=EntryPoint)
 def create_entry_point(db: Session = Depends(get_db)):
     return api.create_entry_point(db=db)
 
 
-@app.get("/entry-points", response_model=list[schemas.EntryPoint])
+@app.get("/entry-points", response_model=list[EntryPoint])
 def read_entry_points(db: Session = Depends(get_db)):
     entry_points = api.get_entry_point_collection(db)
     return entry_points
 
 
-@app.get("/entry-points/{entry_point_id}", response_model=schemas.EntryPoint)
+@app.get("/entry-points/{entry_point_id}", response_model=EntryPoint)
 def read_entry_point(entry_point_id: int, db: Session = Depends(get_db)):
     db_entry_point = api.get_entry_point(db, entry_point_id=entry_point_id)
     if db_entry_point is None:
@@ -71,20 +52,18 @@ def read_entry_point(entry_point_id: int, db: Session = Depends(get_db)):
     return db_entry_point
 
 
-@app.post("/parking-slots", response_model=schemas.ParkingSlot)
-def create_parking_slot(
-    parking_slot: schemas.ParkingSlotCreate, db: Session = Depends(get_db)
-):
+@app.post("/parking-slots", response_model=ParkingSlot)
+def create_parking_slot(parking_slot: ParkingSlotCreate, db: Session = Depends(get_db)):
     return api.create_parking_slot(db=db, parking_slot=parking_slot)
 
 
-@app.get("/parking-slots", response_model=list[schemas.ParkingSlot])
+@app.get("/parking-slots", response_model=list[ParkingSlot])
 def read_parking_slots(db: Session = Depends(get_db)):
     parking_slots = api.get_parking_slot_collection(db)
     return parking_slots
 
 
-@app.get("/parking-slots/{parking_slot_id}", response_model=schemas.ParkingSlot)
+@app.get("/parking-slots/{parking_slot_id}", response_model=ParkingSlot)
 def read_parking_slot(parking_slot_id: int, db: Session = Depends(get_db)):
     db_parking_slot = api.get_parking_slot(db, parking_slot_id=parking_slot_id)
     if db_parking_slot is None:
@@ -92,9 +71,9 @@ def read_parking_slot(parking_slot_id: int, db: Session = Depends(get_db)):
     return db_parking_slot
 
 
-@app.post("/slot-entry", response_model=schemas.ParkingSlotEntryPoint)
+@app.post("/slot-entry", response_model=ParkingSlotEntryPoint)
 def create_parking_slot_entry_point(
-    parking_slot_entry_point: schemas.ParkingSlotEntryPointCreate,
+    parking_slot_entry_point: ParkingSlotEntryPointCreate,
     db: Session = Depends(get_db),
 ):
     return api.create_parking_slot_entry_point(
@@ -102,7 +81,7 @@ def create_parking_slot_entry_point(
     )
 
 
-@app.get("/slot-entry", response_model=list[schemas.ParkingSlotEntryPoint])
+@app.get("/slot-entry", response_model=list[ParkingSlotEntryPoint])
 def read_parking_slot_entry_points(db: Session = Depends(get_db)):
     parking_slot_entry_points = api.get_parking_slot_entry_point_collection(db)
     return parking_slot_entry_points
@@ -110,7 +89,7 @@ def read_parking_slot_entry_points(db: Session = Depends(get_db)):
 
 @app.get(
     "/slot-entry/{parking_slot_entry_point_id}",
-    response_model=schemas.ParkingSlotEntryPoint,
+    response_model=ParkingSlotEntryPoint,
 )
 def read_parking_slot_entry_point(
     parking_slot_entry_point_id: int, db: Session = Depends(get_db)
@@ -125,18 +104,18 @@ def read_parking_slot_entry_point(
     return db_parking_slot_entry_point
 
 
-@app.post("/cars", response_model=schemas.Car)
-def create_car(car: schemas.CarCreate, db: Session = Depends(get_db)):
+@app.post("/cars", response_model=Car)
+def create_car(car: CarCreate, db: Session = Depends(get_db)):
     return api.create_car(db=db, car_id=car.id)
 
 
-@app.get("/cars", response_model=list[schemas.Car])
+@app.get("/cars", response_model=list[Car])
 def read_cars(db: Session = Depends(get_db)):
     cars = api.get_car_collection(db)
     return cars
 
 
-@app.get("/cars/{car_id}", response_model=schemas.Car)
+@app.get("/cars/{car_id}", response_model=Car)
 def read_car(car_id: int, db: Session = Depends(get_db)):
     db_car = api.get_car(db, car_id=car_id)
     if db_car is None:
@@ -144,15 +123,15 @@ def read_car(car_id: int, db: Session = Depends(get_db)):
     return db_car
 
 
-@app.post("/new-parking-system", response_model=schemas.GenericSuccess)
+@app.post("/new-parking-system", response_model=GenericSuccess)
 def create_new_parking_system(
-    parking_system: schemas.ParkingSystemCreate, db: Session = Depends(get_db)
+    parking_system: ParkingSystemCreate, db: Session = Depends(get_db)
 ):
     return api.start_new_parking_system(db=db, parking_system=parking_system)
 
 
 @app.post("/park-car")
-def park_car(park_car: schemas.ParkCar, db: Session = Depends(get_db)):
+def park_car(park_car: ParkCar, db: Session = Depends(get_db)):
     parking_slot = api.get_available_parking_slot(db=db, park_car=park_car)
     if parking_slot is None:
         raise HTTPException(status_code=404, detail="No available parking slot found")
@@ -168,7 +147,7 @@ def park_car(park_car: schemas.ParkCar, db: Session = Depends(get_db)):
 
 
 @app.post("/unpark-car")
-def unpark_car(unpark_car: schemas.UnparkCar, db: Session = Depends(get_db)):
+def unpark_car(unpark_car: UnparkCar, db: Session = Depends(get_db)):
     parking_slot = api.get_parking_slot_by_car_id(db=db, car_id=unpark_car.car_id)
     if parking_slot is None:
         raise HTTPException(status_code=404, detail="No parking slot with car id found")
