@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import NewParking from "./components/NewParking";
+import ParkCar from "./components/ParkCar";
+import UnparkCar from "./components/UnparkCar";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Service from "./service";
+import ParkingSlot from "./components/ParkingSlot";
+import ParkingSlotType from "./types/ParkingSlotType";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { isLoading, isError, data, error } = useQuery<ParkingSlotType[]>({
+    queryKey: ["repoData"],
+    queryFn: Service.getAllParkingSlots
+  });
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="flex-cols flex h-screen w-full bg-slate-50 text-center">
+      <div className="hidden h-full w-2/12 flex-col divide-y divide-slate-400 bg-slate-200 p-4 md:flex">
+        <img
+          src="src/assets/OOM Logo.svg"
+          alt="My Happy SVG"
+          className="w-16 self-center pb-4 md:w-20 lg:w-24"
+        />
+        <div className="grid h-full auto-rows-max grid-cols-1 justify-stretch gap-3 py-5">
+          <NewParking onSubmit={Service.newParkingSystem} />
+          <ParkCar onSubmit={Service.parkcar} />
+          <UnparkCar onSubmit={Service.unparkCar} />
+        </div>
+        <div className="pt-4">OO Parking System</div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+
+      <div className="m-4 flex w-full items-start gap-3">
+        {isLoading
+          ? "Loading"
+          : data?.map((parkingSlot) => (
+              <ParkingSlot
+                parkingSlotId={parkingSlot.id}
+                carId={parkingSlot.car_id}
+                key={parkingSlot.id}
+              />
+            ))}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
