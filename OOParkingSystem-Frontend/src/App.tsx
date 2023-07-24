@@ -1,16 +1,31 @@
-import { useState } from "react";
 import NewParking from "./components/NewParking";
 import ParkCar from "./components/ParkCar";
 import UnparkCar from "./components/UnparkCar";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Service from "./service";
 import ParkingSlot from "./components/ParkingSlot";
 import ParkingSlotType from "./types/ParkingSlotType";
 
 function App() {
-  const { isLoading, isError, data, error } = useQuery<ParkingSlotType[]>({
-    queryKey: ["repoData"],
+  const queryClient = useQueryClient();
+  const { isLoading, data } = useQuery<ParkingSlotType[]>({
+    queryKey: ["parkingSlotsData"],
     queryFn: Service.getAllParkingSlots
+  });
+  const mutationParkingSystem = useMutation({
+    mutationFn: Service.newParkingSystem,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["parkingSlotsData"] })
+  });
+  const mutationParkCar = useMutation({
+    mutationFn: Service.parkcar,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["parkingSlotsData"] })
+  });
+  const mutationUnparkCar = useMutation({
+    mutationFn: Service.unparkCar,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["parkingSlotsData"] })
   });
 
   return (
@@ -22,9 +37,14 @@ function App() {
           className="w-16 self-center pb-4 md:w-20 lg:w-24"
         />
         <div className="grid h-full auto-rows-max grid-cols-1 justify-stretch gap-3 py-5">
-          <NewParking onSubmit={Service.newParkingSystem} />
-          <ParkCar onSubmit={Service.parkcar} />
-          <UnparkCar onSubmit={Service.unparkCar} />
+          <NewParking onSubmit={mutationParkingSystem.mutate} />
+          <ParkCar onSubmit={mutationParkCar.mutate} />
+          <UnparkCar
+            onSubmit={mutationUnparkCar.mutate}
+            isLoading={mutationUnparkCar.isLoading}
+            data={mutationUnparkCar.data}
+            reset={mutationUnparkCar.reset}
+          />
         </div>
         <div className="pt-4">OO Parking System</div>
       </div>

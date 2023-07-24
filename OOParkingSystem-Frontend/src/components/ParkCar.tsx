@@ -2,23 +2,20 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import Input from "./Input";
 import { useState } from "react";
+import { UseMutateFunction } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 
 type Props = {
-  onSubmit: ({
-    carId,
-    carSize,
-    entrypointId,
-    startTime
-  }: {
-    carId: any;
-    carSize: any;
-    entrypointId: any;
-    startTime: any;
-  }) => Promise<any>;
+  onSubmit: UseMutateFunction<
+    AxiosResponse,
+    unknown,
+    { carId: string; carSize: string; entrypointId: number; startTime: Date },
+    unknown
+  >;
 };
 
 const ParkCar = ({ onSubmit }: Props) => {
-  const [plateNumber, setPlateNumber] = useState("");
+  const [carId, setCarId] = useState("");
   const [carSize, setCarSize] = useState("");
   const [entrypoint, setEntrypoint] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -39,28 +36,24 @@ const ParkCar = ({ onSubmit }: Props) => {
           </Dialog.Description>
           <Input
             label="Plate Number"
-            defaultValue="3"
             id="platenumberparkinput"
-            value={plateNumber}
-            setValue={setPlateNumber}
+            value={carId}
+            setValue={setCarId}
           />
           <Input
             label="Car Size"
-            defaultValue=""
             id="carsizeinput"
             value={carSize}
             setValue={setCarSize}
           />
           <Input
             label="Entrypoint"
-            defaultValue=""
             id="entrypointinput"
             value={entrypoint}
             setValue={setEntrypoint}
           />
           <Input
             label="Start Date"
-            defaultValue=""
             id="startdateinput"
             value={startDate}
             setValue={setStartDate}
@@ -69,7 +62,14 @@ const ParkCar = ({ onSubmit }: Props) => {
             <Dialog.Close asChild>
               <button
                 className="rounded-sm bg-emerald-200 p-2"
-                onClick={onSubmit}
+                onClick={() =>
+                  onSubmit({
+                    carId: carId,
+                    carSize: carSize,
+                    entrypointId: Number(entrypoint),
+                    startTime: new Date(startDate)
+                  })
+                }
               >
                 Submit
               </button>

@@ -13,30 +13,30 @@ const getAllParkingSlots = async () => {
   return response.data;
 };
 
-const newParkingSystem = async ({ entrypoints, parkingSlots }) => {
-  const response = await apiClient.post("/new-parking-system", {
+const newParkingSystem = ({ entrypoints, parkingSlots }) => {
+  const response = apiClient.post("/new-parking-system", {
     entry_points: entrypoints,
     parking_slots: parkingSlots
   });
-  return response.data;
+  return response;
 };
 
-const parkcar = async ({ carId, carSize, entrypointId, startTime }) => {
-  const response = await apiClient.post("/park-car", {
+const parkcar = ({ carId, carSize, entrypointId, startTime }) => {
+  const response = apiClient.post("/park-car", {
     car_id: carId,
     car_size: carSize,
     entry_point_id: entrypointId,
     start_time: startTime
   });
-  return response.data;
+  return response;
 };
 
-const unparkCar = async ({ carId, exitTime }) => {
-  const response = await apiClient.post("/unpark-car", {
-    car_id: null,
-    exit_time: null
+const unparkCar = ({ carId, exitTime }) => {
+  const response = apiClient.post("/unpark-car", {
+    car_id: carId,
+    exit_time: exitTime
   });
-  return response.data;
+  return response;
 };
 
 const Service = {

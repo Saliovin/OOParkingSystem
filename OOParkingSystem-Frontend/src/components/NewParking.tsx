@@ -2,19 +2,20 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import Input from "./Input";
 import { useState } from "react";
+import { UseMutateFunction } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 
 type Props = {
-  onSubmit: ({
-    entrypoints,
-    parkingSlots
-  }: {
-    entrypoints: any;
-    parkingSlots: any;
-  }) => Promise<any>;
+  onSubmit: UseMutateFunction<
+    AxiosResponse,
+    unknown,
+    { entrypoints: number; parkingSlots: unknown },
+    unknown
+  >;
 };
 
 const NewParking = ({ onSubmit }: Props) => {
-  const [entrypoints, setEntrypoints] = useState("");
+  const [entrypoints, setEntrypoints] = useState("3");
   const [parkingSlots, setParkingSlots] = useState("");
   return (
     <Dialog.Root>
@@ -34,14 +35,12 @@ const NewParking = ({ onSubmit }: Props) => {
           </Dialog.Description>
           <Input
             label="Entrypoints"
-            defaultValue="3"
             id="entrypointsinput"
             value={entrypoints}
             setValue={setEntrypoints}
           />
           <Input
             label="Parking Slots"
-            defaultValue=""
             id="parkingslotsinput"
             value={parkingSlots}
             setValue={setParkingSlots}
@@ -50,7 +49,12 @@ const NewParking = ({ onSubmit }: Props) => {
             <Dialog.Close asChild>
               <button
                 className="rounded-sm bg-emerald-200 p-2"
-                onClick={onSubmit}
+                onClick={() =>
+                  onSubmit({
+                    entrypoints: Number(entrypoints),
+                    parkingSlots: JSON.parse(parkingSlots) as unknown
+                  })
+                }
               >
                 Submit
               </button>

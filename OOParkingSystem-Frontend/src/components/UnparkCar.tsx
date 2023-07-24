@@ -1,24 +1,34 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { Cross2Icon, ResetIcon } from "@radix-ui/react-icons";
 import Input from "./Input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { UseMutateFunction } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 
 type Props = {
-  onSubmit: ({
-    carId,
-    exitTime
-  }: {
-    carId: any;
-    exitTime: any;
-  }) => Promise<any>;
+  onSubmit: UseMutateFunction<
+    AxiosResponse,
+    unknown,
+    { carId: string; exitTime: Date },
+    unknown
+  >;
+  isLoading: boolean;
+  data: AxiosResponse<number, unknown> | undefined;
+  reset: () => void;
 };
 
-const UnparkCar = ({ onSubmit }: Props) => {
+const UnparkCar = ({ onSubmit, isLoading, data, reset }: Props) => {
   const [carId, setcarId] = useState("");
   const [exitTime, setExitTime] = useState("");
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      reset();
+    }
+  }, [open, reset]);
 
   return (
-    <Dialog.Root>
+    <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button className="rounded-md bg-emerald-300 px-4 py-3 font-bold text-slate-600 shadow-md hover:bg-emerald-400">
           Unpark Car
@@ -31,32 +41,40 @@ const UnparkCar = ({ onSubmit }: Props) => {
           <Dialog.Description className="my-4 text-slate-500">
             Leave the parking slot and get a parking fee
           </Dialog.Description>
-          <Input
-            label="Plate Number"
-            defaultValue="3"
-            id="platenumberunparkinput"
-            value={carId}
-            setValue={setcarId}
-          />
-          <Input
-            label="Exit Time"
-            defaultValue=""
-            id="exittimeinput"
-            value={exitTime}
-            setValue={setExitTime}
-          />
-          <div className="mt-2 flex justify-end">
-            <Dialog.Close asChild>
-              <button
-                className="rounded-sm bg-emerald-200 p-2"
-                onClick={() => {
-                  onSubmit({ carId, exitTime });
-                }}
-              >
-                Submit
-              </button>
-            </Dialog.Close>
-          </div>
+          {isLoading ? (
+            "Loading"
+          ) : data ? (
+            `Your parking fee is PHP${data.data}`
+          ) : (
+            <>
+              <Input
+                label="Plate Number"
+                id="platenumberunparkinput"
+                value={carId}
+                setValue={setcarId}
+              />
+              <Input
+                label="Exit Time"
+                id="exittimeinput"
+                value={exitTime}
+                setValue={setExitTime}
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  className="rounded-sm bg-emerald-200 p-2"
+                  onClick={() =>
+                    onSubmit({
+                      carId: carId,
+                      exitTime: new Date(exitTime)
+                    })
+                  }
+                >
+                  Submit
+                </button>
+              </div>
+            </>
+          )}
+
           <Dialog.Close asChild>
             <button className="absolute right-4 top-4" aria-label="Close">
               <Cross2Icon className="scale-125" />

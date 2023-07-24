@@ -1,12 +1,11 @@
 type Props = {
   label: string;
-  defaultValue: string;
   id: string;
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Input = ({ label, defaultValue, id, value, setValue }: Props) => {
+const Input = ({ label, id, value, setValue }: Props) => {
   return (
     <fieldset className="mb-2 flex items-center gap-4">
       <label className="w-48 text-right" htmlFor={id}>
@@ -15,7 +14,6 @@ const Input = ({ label, defaultValue, id, value, setValue }: Props) => {
       <input
         className="h-8 w-full rounded-sm border-2 bg-inherit px-2"
         id={id}
-        defaultValue={defaultValue}
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

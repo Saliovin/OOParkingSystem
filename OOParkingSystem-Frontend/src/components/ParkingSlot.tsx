@@ -10,8 +10,8 @@ const ParkingSlot = ({ parkingSlotId, carId }: Props) => {
         carId ? "bg-red-200" : "bg-slate-200"
       } p-2 shadow-md`}
     >
-      <text className="font-bold">Slot {parkingSlotId}</text>
-      <text>{carId ? `Occupied: ${carId}` : "Unoccupied"}</text>
+      <p className="font-bold">Slot {parkingSlotId}</p>
+      <p>{carId ? `Occupied: ${carId}` : "Unoccupied"}</p>
     </div>
   );
 };
