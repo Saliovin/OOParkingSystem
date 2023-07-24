@@ -1,5 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { Cross2Icon, ResetIcon } from "@radix-ui/react-icons";
+import { Cross2Icon } from "@radix-ui/react-icons";
 import Input from "./Input";
 import { useEffect, useState } from "react";
 import { UseMutateFunction } from "@tanstack/react-query";
