@@ -1,0 +1,42 @@
+name: Deploy
+run-name: ${{ github.actor }} is building ${{ github.sha }}
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v4
+
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: "Build and Push Image - Backend"
+        working-directory: OOParkingSystem-Backend
+        run: |
+          docker build -t parking/backend .
+          docker tag parking/backend:latest ghcr.io/saliovin/parking/backend:latest
+          docker push ghcr.io/saliovin/parking/backend:latest
+
+      - name: "Build and Push Image - Frontend"
+        working-directory: OOParkingSystem-Frontend
+        run: |
+          docker build -t parking/frontend .
+          docker tag parking/frontend:latest ghcr.io/saliovin/parking/frontend:latest
+          docker push ghcr.io/saliovin/parking/frontend:latest
+
+      - name: Restarting Docker Compose Through SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: sudo docker compose up -d --remove-orphans
