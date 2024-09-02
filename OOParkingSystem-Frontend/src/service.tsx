@@ -2,7 +2,7 @@ import axios from "axios";
 import ParkingSlotType from "./types/ParkingSlotType";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   headers: {
     "Content-type": "application/json"
   }
