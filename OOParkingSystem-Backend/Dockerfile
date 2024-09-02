@@ -4,7 +4,7 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-RUN sudo apt-get install libpq-dev python-dev
+RUN apt-get install libpq-dev python-dev
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
