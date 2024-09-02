@@ -8,8 +8,8 @@ RUN apk add postgresql-dev
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-RUN chmod +x scripts/entrypoint.sh
-
 COPY . /code
+
+RUN chmod +x scripts/entrypoint.sh
 
 ENTRYPOINT ["./scripts/daemon.sh"]
