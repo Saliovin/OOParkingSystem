@@ -4,7 +4,7 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-RUN apt install libpq-dev python-dev
+RUN apk add postgresql-dev
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
