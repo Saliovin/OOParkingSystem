@@ -13,6 +13,7 @@ const getAllParkingSlots = async () => {
   return response.data;
 };
 
+// @ts-ignore:next-line
 const newParkingSystem = ({ entrypoints, parkingSlots }) => {
   const response = apiClient.post("/new-parking-system", {
     entry_points: entrypoints,
@@ -21,6 +22,7 @@ const newParkingSystem = ({ entrypoints, parkingSlots }) => {
   return response;
 };
 
+// @ts-ignore:next-line
 const parkcar = ({ carId, carSize, entrypointId, startTime }) => {
   const response = apiClient.post("/park-car", {
     car_id: carId,
@@ -31,6 +33,7 @@ const parkcar = ({ carId, carSize, entrypointId, startTime }) => {
   return response;
 };
 
+// @ts-ignore:next-line
 const unparkCar = ({ carId, exitTime }) => {
   const response = apiClient.post("/unpark-car", {
     car_id: carId,
