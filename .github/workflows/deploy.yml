@@ -29,7 +29,7 @@ jobs:
       - name: "Build and Push Image - Frontend"
         working-directory: OOParkingSystem-Frontend
         run: |
-          docker build -t parking/frontend .
+          docker build -t parking/frontend --build-arg VITE_BACKEND_URL=${{ secrets.API_URL }}.
           docker tag parking/frontend:latest ghcr.io/saliovin/parking/frontend:latest
           docker push ghcr.io/saliovin/parking/frontend:latest
 
