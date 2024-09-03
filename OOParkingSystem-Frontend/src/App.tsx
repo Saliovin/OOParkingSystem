@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Service from "./service";
 import ParkingSlot from "./components/ParkingSlot";
 import ParkingSlotType from "./types/ParkingSlotType";
+import imgUrl from "./assets/OOM_Logo.svg"
 
 function App() {
   const queryClient = useQueryClient();
@@ -32,7 +33,7 @@ function App() {
     <div className="flex-cols flex h-screen w-full bg-slate-50 text-center">
       <div className="hidden h-full w-2/12 flex-col divide-y divide-slate-400 bg-slate-200 p-4 md:flex">
         <img
-          src="src/assets/OOM Logo.svg"
+          src={imgUrl}
           alt="My Happy SVG"
           className="w-16 self-center pb-4 md:w-20 lg:w-24"
         />
