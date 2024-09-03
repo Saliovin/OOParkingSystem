@@ -35,7 +35,7 @@ class ParkingSlot(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     size = Column(String(2), index=True)
-    car_id = Column(Integer, ForeignKey("car.id"), index=True)
+    car_id = Column(String, ForeignKey("car.id"), index=True)
     start_time_occupied = Column(DateTime)
 
     entry_points = relationship(
